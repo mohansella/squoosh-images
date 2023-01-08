@@ -24,6 +24,9 @@ class Main
 
     private static readonly START_FROM = 0; //this is to resume in case of failure previously
 
+    private static totalInputBytes  = 0;
+    private static totalOutputBytes  = 0;
+
     public static async main() 
     {
         let maxFilesCount = 10000;
@@ -49,12 +52,12 @@ class Main
                 await this.joinMethods(activeImageMethods, CPUS_COUNT);
             }
         }
-        for(var i = 0; i < activeImageMethods.length; i++) {
-            let currMethod = activeImageMethods[i];
-            await currMethod;
-        }
+        
+        //close remaining
+        await this.joinMethods(activeImageMethods, activeImageMethods.length);
 
         this.IMAGE_POOL.close();
+        console.log(`totalInputBytes:${chalk.green(prettyBytes(this.totalInputBytes))} totalOutputBytes:${chalk.green(prettyBytes(this.totalOutputBytes))}`)
     }
 
     private static async joinMethods(activeImageMethods : Promise<void>[], count: number) {
@@ -78,6 +81,9 @@ class Main
             }
         });
         console.log(`writing [${currFileId}/${totalFiles}]: output/${chalk.green(relativePath)} inputSize: ${chalk.green(prettyBytes(imageData.byteLength))} outputSize: ${chalk.green(prettyBytes(result.mozjpeg.binary.byteLength))}`);
+        this.totalInputBytes += imageData.byteLength;
+        this.totalOutputBytes += result.mozjpeg.binary.byteLength;
+
         let targetPath = `${this.OUTPUT_DIR}${path.sep}${relativePath}`;
         let targetFolder = targetPath.substring(0, targetPath.lastIndexOf(path.sep));
         fs.mkdirSync(targetFolder, {recursive: true});
