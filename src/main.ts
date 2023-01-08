@@ -22,6 +22,7 @@ class Main
     private static processedCount = 0;
     private static filePaths: string[] = [];
 
+    private static readonly START_FROM = 0; //this is to resume in case of failure previously
 
     public static async main() 
     {
@@ -30,12 +31,16 @@ class Main
             //select first file alone
             if(maxFilesCount-- <= 0) return false;
 
-            return path.endsWith(".jpg") || path.endsWith(".JPG");
+            if(path.endsWith(".jpg") || path.endsWith(".JPG")) {
+                //fs.rmSync(path);  //comment or uncomment to delete for second time
+                return true;
+            }
+            return false;
         });
         console.log(`poolsize:${chalk.blue(cpus().length)} files count:${this.filePaths.length}`);
 
         let activeImageMethods : Promise<void>[] = [];
-        for(var i = 0; this.filePaths.length; i++) {
+        for(var i = this.START_FROM; i < this.filePaths.length; i++) {
             let filePath = this.filePaths[i]
             let currMethod = this.processFile(filePath, i, this.filePaths.length)
             activeImageMethods.push(currMethod);
