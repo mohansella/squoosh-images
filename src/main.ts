@@ -63,8 +63,7 @@ class Main
     private static async joinMethods(activeImageMethods : Promise<void>[], count: number) {
         let loopCount = Math.min(activeImageMethods.length, count);
         while(loopCount-- > 0) {
-            let otherMethod = activeImageMethods.pop();
-            await otherMethod;
+            await activeImageMethods.pop();
         }
     }
 
